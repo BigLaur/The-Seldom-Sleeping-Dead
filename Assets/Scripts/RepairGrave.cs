@@ -1,52 +1,41 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+// Uses UI
 using UnityEngine.UI;
 
 public class RepairGrave : MonoBehaviour
 {
-    //private SpriteRenderer rend;
-    //private Material mat;
-    //private Sprite damagedSprite, normalSprite, damagedOutlinedSprite;
+    // Grave sprites are set up as animations controlled through anim
     private Animator anim;
     private bool canBeFixed = false;
     public bool isDamaged;
     public int remainingActions;
+    bool ignoreInput = false;
     public Text counterText;
+    // Used to fade screen to/from black
     public GameObject blackOutSquare;
 
     // Start is called before the first frame update
     void Start()
     {
-        //rend = GetComponent<SpriteRenderer>();
-
-        //mat = GetComponent<Material>();
-        //mat = Resources.Load<Material>("Grave");
-
         anim = GetComponent<Animator>();
-
-        //normalSprite = Resources.Load<Sprite>("grave_normal");
-        //damagedSprite = Resources.Load<Sprite>("grave_destroyed");
-
-        //normalSprite = Resources.Load<Sprite>("spritesheet_0");
-        //damagedSprite = Resources.Load<Sprite>("spritesheet_1");
-        //damagedOutlinedSprite = Resources.Load<Sprite>("spritesheet_2");
-
+        // Displays the correct sprite
         if (isDamaged && !canBeFixed)
         {
-            //rend.sprite = damagedSprite;
+            // Sets sprite to damaged without outline
             anim.SetBool("isDamaged", true);
             anim.SetBool("isHovered", false);
         }
         else if (isDamaged && canBeFixed)
         {
-            //rend.sprite = damagedOutlinedSprite;
+            // Sets sprite to damaged with outline
             anim.SetBool("isDamaged", true);
             anim.SetBool("isHovered", true);
         }
         else
         {
-            //rend.sprite = normalSprite;
+            // Sets sprite to repaired
             anim.SetBool("isDamaged", false);
             anim.SetBool("isHovered", false);
         }
@@ -55,89 +44,71 @@ public class RepairGrave : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        // Gets the number of actions the player has left (from the script GlobalVariables)
         remainingActions = GlobalVariables.actions;
-        if (canBeFixed && move.rb.velocity.y == 0 && move.isCrouching == false)
+        // If the player is stood still near a damaged grave
+        if (canBeFixed && move.rb.velocity.y == 0 && move.rb.velocity.x == 0 && move.isCrouching == false)
         {
-            //code for outline
-
-            //code to detect keypress
-            if (Input.GetKeyDown(KeyCode.X))
+            // Detects if button pressed, ignoreInput stops player from spamming
+            if (Input.GetKeyDown(KeyCode.X) && ignoreInput == false)
             {
-                //player crouches
+                // So player can't repeat input during transition
+                ignoreInput = true;
+                // Disables player's movement
                 GlobalVariables.canMove = false;
-                //transition
                 StartCoroutine(Repair());
-                //sound effects
-                //rend.sprite = normalSprite;
-                GlobalVariables.actions -= 1;
             }
         }
-
+        // Updates the displayed sprite
         if (isDamaged && !canBeFixed)
         {
-            //rend.sprite = damagedSprite;
             anim.SetBool("isDamaged", true);
             anim.SetBool("isHovered", false);
         }
         else if (isDamaged && canBeFixed)
         {
-            //rend.sprite = damagedOutlinedSprite;
             anim.SetBool("isDamaged", true);
             anim.SetBool("isHovered", true);
         }
         else
         {
-            //rend.sprite = normalSprite;
             anim.SetBool("isDamaged", false);
             anim.SetBool("isHovered", false);
         }
         counterText.text = remainingActions.ToString();
     }
 
-    //When player enters area around grave
+    // When player enters the area around the grave
     private void OnTriggerEnter2D(Collider2D other)
     {
         if (other.tag == "Player" && isDamaged == true && remainingActions > 0)
         {
-            print("trigger entered");
+            print("trigger entered"); //for debug
             canBeFixed = true;
 
-            //Color color = mat.color;
-            //color.a = Mathf.Clamp(1, 0, 1);
-            ////rend.material.color = color;
-            //mat.color = color;
-
-            //show prompt
+            //show text prompt
         }
     }
-    //When player leaves area around grave
+    //When player leaves the area around the grave
     private void OnTriggerExit2D(Collider2D other)
     {
         if (other.tag == "Player")
         {
-            print("trigger exited");
+            print("trigger exited"); //for debug
             canBeFixed = false;
 
-            ////Color color = rend.material.color;
-            ////color.a = Mathf.Clamp(1, 1, 0);
-            ////rend.material.color = color;
-            //Color color = mat.color;
-            //color.a = Mathf.Clamp(1, 1, 0);
-            ////rend.material.color = color;
-            //mat.color = color;
-
-            //hide prompt
+            //hide text prompt
         }
     }
     public IEnumerator Repair(int fadeSpeed = 2)
     {
-        //Gets the color/alpha of the UI screen blackout image so it can be manipulated
+        // Gets the color/alpha of the UI screen blackout image so it can be manipulated
         Color objectColor = blackOutSquare.GetComponent<Image>().color;
         float fadeAmount;
 
-        //play crouch animation
+        // Play crouch animation
         move.anim.SetBool("isCrouching", true);
-        //changes the alpha of the UI screen blackout image to 1 (opache) over fadeSpeed amount of seconds
+        // Changes the alpha of the UI screen blackout image to 1 (opache) over fadeSpeed amount of seconds
         while (blackOutSquare.GetComponent<Image>().color.a < 1)
         {
             fadeAmount = objectColor.a + (fadeSpeed * Time.deltaTime);
@@ -146,11 +117,13 @@ public class RepairGrave : MonoBehaviour
             blackOutSquare.GetComponent<Image>().color = objectColor;
             yield return null;
         }
-        //pause on black screen for 1 sec
+        // Pause on black screen for 1 sec
         yield return new WaitForSeconds(1);
+        // Update our variables
         canBeFixed = false;
         isDamaged = false;
-        //changes the alpha of the UI screen blackout image to 0 (transparent) over fadeSpeed amount of seconds
+        GlobalVariables.actions -= 1;
+        // Changes the alpha of the UI screen blackout image to 0 (transparent) over fadeSpeed amount of seconds
         while (blackOutSquare.GetComponent<Image>().color.a > 0)
         {
             fadeAmount = objectColor.a - (fadeSpeed * Time.deltaTime);
@@ -160,10 +133,12 @@ public class RepairGrave : MonoBehaviour
             yield return null;
         }
 
-        //play stand up animation
+        // Play stand up animation
         move.anim.SetBool("isCrouching", false);
 
-        //Restore player's ability to move
+        // Restore player's ability to move
         GlobalVariables.canMove = true;
+        // Restore player's input
+        ignoreInput = false;
     }
 }
