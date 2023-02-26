@@ -9,7 +9,7 @@ public class move : MonoBehaviour
     public static Rigidbody2D rb;
     public static Animator anim;
     // Movement speeds
-    float dirx, moveSpeed = 8f, crouchSpeed = 5f;
+    public static float dirx, moveSpeed = 8f, crouchSpeed = 5f;
     public static bool isRunning, isCrouching;
     bool facingRight = true;
     Vector3 localScale;
@@ -45,14 +45,19 @@ public class move : MonoBehaviour
             // Plays the required animation
             SetAnimationState();
             // Gets the required direction and the correct speed
-            if (isCrouching)
+            if (EdgeCollide.cancelInput != true)
             {
-                dirx = Input.GetAxisRaw("Horizontal") * crouchSpeed;
+                if (isCrouching)
+                {
+                    dirx = Input.GetAxisRaw("Horizontal") * crouchSpeed;
+                }
+                else
+                {
+                    dirx = Input.GetAxisRaw("Horizontal") * moveSpeed;
+                }
             }
-            else
-            {
-                dirx = Input.GetAxisRaw("Horizontal") * moveSpeed;
-            }
+            
+            // EdgeCollide.cancelInput != true
         }
     }
     
