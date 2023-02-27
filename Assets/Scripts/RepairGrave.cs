@@ -47,7 +47,7 @@ public class RepairGrave : MonoBehaviour
         // Gets the number of actions the player has left (from the script GlobalVariables)
         remainingActions = GlobalVariables.actions;
         // If the player is stood still near a damaged grave
-        if (canBeFixed && move.rb.velocity.y == 0 && move.rb.velocity.x == 0 && move.isCrouching == false)
+        if (canBeFixed && move.rb.velocity.y == 0 && move.rb.velocity.x == 0 && move.isCrouching == false && remainingActions > 0)
         {
             // Detects if button pressed, ignoreInput stops player from spamming
             if (Input.GetKeyDown(KeyCode.X) && ignoreInput == false)

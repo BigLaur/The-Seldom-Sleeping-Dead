@@ -31,5 +31,16 @@ public class EdgeCollide : MonoBehaviour
             move.anim.SetBool("isJumping", false);
         }
     }
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        if (move.anim.GetBool("isJumping") == true)
+        {
+            print("a");
+
+            cancelInput = true;
+            move.dirx = 0;
+            move.anim.SetBool("isJumping", false);
+        }
+    }
 
 }
